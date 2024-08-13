@@ -1,25 +1,40 @@
-import express,{Request,Response} from 'express'
+import express, { Request, Response } from 'express'
 import cookieparser from 'cookie-parser'
-import cors from "cors";
-import connectDB  from './config/db'
-import routes from './router/routes'
+import {Server} from "socket.io"
+import http from "http"
+import cors from "cors"
+import path from "path"
 import 'dotenv/config'
 
+import connectDB from './config/db'
+import routes from './router/routes'
+
 //connectDB()
-const app=express()
+const app = express()
 app.use(cors())
-app.use(express.urlencoded({extended:false}))
+app.use(express.urlencoded({ extended: false }))
 app.use(express.json())
 app.use(cookieparser())
 
-app.get('/',(req:Request,res:Response):Response=>{
-    return res.status(201).json({msg:"Server is Live!!🚀"})
+app.set("view engine","ejs")
+app.use(express.static(path.join(__dirname,"public")))
+
+
+const server = http.createServer(app)
+const io = new Server(server)
+
+app.get('/', (req: Request, res: Response) => {
+    res.render("index")
 })
 
-app.use('/api',routes)
+app.use('/api', routes)
 
 const port: number = Number(process.env.PORT)
 
-app.listen(port,()=>{
+io.on("connection",function(socket){
+    console.log("connected")
+})
+
+server.listen(port, () => {
     console.log(`Server is up and Running at http://localhost:${port}`)
 })
