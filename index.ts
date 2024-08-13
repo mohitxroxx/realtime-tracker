@@ -32,7 +32,14 @@ app.use('/api', routes)
 const port: number = Number(process.env.PORT)
 
 io.on("connection",function(socket){
-    console.log("connected")
+    socket.on("send-location", function(data){
+        io.emit("receive-location", {id: socket.id , ...data})
+    })
+    console.log("connected established")
+
+    socket.on("disconnect",function(){
+        io.emit("user-disconnected",socket.id)
+    })
 })
 
 server.listen(port, () => {
